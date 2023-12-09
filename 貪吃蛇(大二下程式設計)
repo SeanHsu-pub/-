@@ -1,0 +1,154 @@
+#include <iostream>
+#include <time.h>
+#include <windows.h>
+#include <conio.h>
+/* run this program using the console pauser or add your own getch, system("pause") or input loop */
+using namespace std;
+struct cord{
+  int x,y;
+};
+void initGame();
+bool getkey(int &key);
+void update(int key);
+void show();
+bool checkgrow(cord t);
+int data[20][80]={{0}},px=0,py=0;
+cord snake[500];
+int slen=4;
+int main(int argc, char** argv) {
+	int key=0;
+	initGame();
+	while(!(GetAsyncKeyState(VK_ESCAPE)&0x80000000)){
+		//if(getkey(key)){
+          {getkey(key);
+		  system("CLS");
+	      //cout<<key;
+		  update(key);
+		  show();
+		  Sleep(100);
+		}
+	}
+	//cout<<"@"<<(unsigned short)GetAsyncKeyState(VK_ESCAPE)<<"@";
+	return 0;
+}
+
+void initGame(){
+	snake[0].x=40; snake[0].y=10; data[10][40]=1;
+	snake[1].x=40; snake[1].y=11; data[11][40]=2;
+	snake[2].x=40; snake[2].y=12; data[12][40]=2;
+	snake[3].x=40; snake[3].y=13; data[13][40]=2;
+	data[rand()%20][rand()%40]=3;
+
+}
+bool getkey(int &key){
+   /*  
+	if(kbhit()){
+		key=getch();
+	}
+   */
+   bool flag=false;
+   for(int i=1;i<254;i++){
+     if(GetAsyncKeyState(i)&0x80000000){
+       flag=true;
+       if(key!=i){
+         key=i;
+         break;
+       }
+     }
+   }
+   if(key==13)key=0;  //pause
+
+   return flag;
+}
+void update(int key){
+  if(key==0)return;
+  cord t1,t=snake[slen-1];
+  t1=t;
+  data[t.y][t.x]=0; //tail move
+  for(int i=slen-1;i>0;i--){ //from tail to head
+    t=snake[i]=snake[i-1];
+    data[t.y][t.x]=2;
+  }
+  t=snake[0];
+  switch(key){
+    case 37://left VK_LEFT
+  	  if(--t.x<0)t.x=79;
+  	  break;
+    case 38://up VK_UP
+  	  if(--t.y<0)t.y=19;
+  	  break;
+    case 39://right VK_RIGHT
+      t.x=(t.x+1)%80;
+      break;
+    case 40://down VK_DOWN
+      t.y=(t.y+1)%20;
+      break;
+  }
+  //check ate
+  if(checkgrow(t)){
+  	slen++;
+  }else{
+  	data[t1.y][t1.x]=0;
+  }
+  data[t.y][t.x]=1;  //G:3->1 empty:0->1
+  snake[0]=t;
+
+}
+/*void update(int key){
+  switch(key){
+  	case 40://down
+  	  data[py][px]=0;
+  	  py=(py+1)%20;
+  	  data[py][px]=1;
+  	  break;
+  	case 37://left
+  	  data[py][px]=0;
+  	  if(--px<0)px=79;
+  	  data[py][px]=1;
+  	  break;
+  	case 38://up
+  	  data[py][px]=0;
+  	  if(--py<0)py=19;
+  	  data[py][px]=1;
+  	  break;
+  	case 39://right
+  	  data[py][px]=0;
+  	  px=(px+1)%80;
+  	  data[py][px]=1;
+  	  break;
+  }	
+}
+*/
+void show(){
+	char outs[81];
+	outs[80]='\0';
+	for(int i=0;i<20;i++){
+		for(int j=0;j<80;j++)
+		  switch(data[i][j]){
+		  	case 1:outs[j]='O';break;
+		  	case 2:outs[j]='X';break;
+		  	case 3:outs[j]='G';break;
+		  	default:outs[j]=' ';
+//            case 1:cout<<"O"; break;
+//            case 2:cout<<"X"; break;
+//            case 3:cout<<"G"; break;
+//            default:cout<<" ";
+          }
+        cout<<outs;
+		cout<<"\n";
+	}
+	cout<<slen;
+}
+
+bool checkgrow(cord t){
+  bool flag=false;
+  if(data[t.y][t.x]==3){
+    flag=true;
+    int r,c;
+	do{
+      r=rand()%20; c=rand()%80;
+	}while(data[r][c]);
+	data[r][c]=3;	
+  }
+  return flag;
+}
